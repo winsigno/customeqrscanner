@@ -75,8 +75,6 @@
     <header-file src="src/ios/ScannerViewController.h"/>
     <source-file src="src/ios/ScannerViewController.xib"/>
     <resource-file src="src/ios/BarcodeLocal.xcassets"/>
-    <header-file src="src/ios/AutoFocusPlugin.h" target-dir="src/ios/AutoFocusPlugin.h"/>
-    <source-file src="src/ios/AutoFocusPlugin.m" target-dir="src/ios/AutoFocusPlugin.m"/>
 
     
     <podspec>
