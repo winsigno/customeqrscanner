@@ -45,7 +45,7 @@ CDVInvokedUrlCommand* cdvCommand;
         return;
     }
 
-    UIViewController* scannerViewController = [[ScannerViewController alloc] initWithScanInstructions:options.scanInstructions CameraDirection:directionEnum ScanOrientation:orientationEnum ScanLine:options.scanLine ScanButtonEnabled:options.scanButton ScanButton:options.scanButtonText EnableAutoFocus:options.enableAutoFocus]; // Pass autofocus option];
+    UIViewController* scannerViewController = [[ScannerViewController alloc] initWithScanInstructions:options.scanInstructions CameraDirection:directionEnum ScanOrientation:orientationEnum ScanLine:options.scanLine ScanButtonEnabled:options.scanButton ScanButton:options.scanButtonText EnableAutoFocus:options.enableAutoFocus];
     
     if (@available(iOS 13.0, *)) {
                 [scannerViewController setModalPresentationStyle: UIModalPresentationFullScreen];
