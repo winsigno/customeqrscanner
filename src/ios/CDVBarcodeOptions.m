@@ -33,6 +33,7 @@
         self.scanOrientation = @"3";
         self.scanInstructions = @"";
         self.scanButtonText = @"Scan";
+        self.enableAutoFocus = YES; // Add default value for autofocus
     }
 
     return self;
@@ -59,6 +60,9 @@
     }
     if([options objectForKey: @"camera_direction"] != nil) {
         obj.cameraDirection = (NSString*)[options objectForKey: @"camera_direction"];
+    }
+    if([options objectForKey: @"enable_auto_focus"] != nil) {
+        obj.enableAutoFocus = [(NSNumber*)[options objectForKey: @"enable_auto_focus"] boolValue]; // Add this line
     }
 
     return obj;
