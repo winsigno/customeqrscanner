@@ -1,21 +1,12 @@
 // ScannerViewController.m
 
 #import "ScannerViewController.h"
-#import <AudioToolbox/AudioToolbox.h>
-#import <QuartzCore/CoreAnimation.h>
-#import "OSBarcodeErrors.h"
 
 @interface ScannerViewController ()
 
-@property (nonatomic, strong) ZXCapture *capture;
-@property (nonatomic, weak) IBOutlet UILabel *informationView;
-@property (nonatomic, weak) IBOutlet UIView *movingBar;
-@property (nonatomic, weak) IBOutlet UIView *scanRectView;
-@property (nonatomic, weak) IBOutlet UILabel *decodedLabel;
-@property (nonatomic, weak) UIView *captureView;
-@property (nonatomic, weak) CAGradientLayer *gradient;
-@property (nonatomic) BOOL scanning;
-@property (nonatomic) BOOL isFirstApplyOrientation;
+@property (nonatomic, strong) AVCaptureSession *session;
+@property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
+@property (nonatomic, strong) AVCaptureMetadataOutput *metadataOutput;
 @property (nonatomic) NSString* instructionsText;
 @property (nonatomic) NSString* scanButtonTitle;
 @property (nonatomic) CameraDirection direction;
@@ -26,15 +17,11 @@
 
 @end
 
-@implementation ScannerViewController {
-    CALayer *frameLayer;
-    CGAffineTransform _captureSizeTransform;
-}
+@implementation ScannerViewController
 
 #pragma mark - View Controller Methods
 
-// Initialization method with parameters
--(instancetype)initWithScanInstructions:(NSString *)instructions CameraDirection:(CameraDirection)direction ScanOrientation:(ScanOrientation)orientation ScanLine:(bool)lineEnabled ScanButtonEnabled:(bool)buttonEnabled ScanButton:(NSString *)buttonTitle EnableAutoFocus:(BOOL)enableAutoFocus {
+- (instancetype)initWithScanInstructions:(NSString *)instructions CameraDirection:(CameraDirection)direction ScanOrientation:(ScanOrientation)orientation ScanLine:(bool)lineEnabled ScanButtonEnabled:(bool)buttonEnabled ScanButton:(NSString *)buttonTitle EnableAutoFocus:(BOOL)enableAutoFocus {
     self = [super initWithNibName:nil bundle:nil];
     if (self) {
         self.instructionsText = instructions;
@@ -48,189 +35,97 @@
     return self;
 }
 
-// Dealloc method
-- (void)dealloc {
-    [self.capture.layer removeFromSuperlayer];
-}
-
-// View did load
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Setup UI elements
+    [self setupCamera];
     [self setupUI];
-    // Configure capture settings
-    [self configureCapture];
-    // Start capturing
-    [self startCapturing];
-    // Add gradient for moving laser effect
-    [self addGradientToView];
 }
 
-// View will appear
-- (void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    // Adjust capture frame
-    [self adjustCaptureFrame];
-    // Show laser gradient
-    self.laserGradient.hidden = false;
-}
-
-// Supported interface orientations
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    switch (self.orientation) {
-        case kAdaptive:
-            return UIInterfaceOrientationMaskAll;
-        case kPortrait:
-            return UIInterfaceOrientationMaskPortrait;
-        case kLandscape:
-            return UIInterfaceOrientationMaskLandscape;
+- (void)setupCamera {
+    self.session = [[AVCaptureSession alloc] init];
+    AVCaptureDevice *device;
+    
+    switch (self.direction) {
+        case kBack:
+            device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+            break;
+        case kFront:
+            device = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo][1];
+            break;
         default:
-            return UIInterfaceOrientationMaskAll;
+            device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+            break;
     }
+
+    NSError *error = nil;
+    AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
+    if (error) {
+        NSLog(@"Error getting camera input: %@", error.localizedDescription);
+        return;
+    }
+    
+    if ([self.session canAddInput:input]) {
+        [self.session addInput:input];
+    }
+    
+    self.metadataOutput = [[AVCaptureMetadataOutput alloc] init];
+    if ([self.session canAddOutput:self.metadataOutput]) {
+        [self.session addOutput:self.metadataOutput];
+        [self.metadataOutput setMetadataObjectsDelegate:self queue:dispatch_get_main_queue()];
+        [self.metadataOutput setMetadataObjectTypes:@[AVMetadataObjectTypeQRCode]];
+    }
+    
+    self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.session];
+    self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    self.previewLayer.frame = self.view.layer.bounds;
+    [self.view.layer addSublayer:self.previewLayer];
+    
+    [self.session startRunning];
 }
 
-// Setup UI elements
 - (void)setupUI {
-    // Set instructions text
     self.informationView.text = self.instructionsText;
-    // Customize scan button
     self.scanButton.layer.cornerRadius = 25;
     self.scanButton.clipsToBounds = YES;
     self.scanButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
     self.scanButton.hidden = !self.scanButtonEnabled;
-    // Hide moving bar if not enabled
     self.movingBar.hidden = !self.lineEnabled;
+    self.view.backgroundColor = UIColor.blackColor;
+    [self addGradientToView];
 }
 
-// Configure capture settings
-- (void)configureCapture {
-    // Initialize capture object
-    self.capture = [[ZXCapture alloc] init];
-    self.capture.sessionPreset = AVCaptureSessionPreset1920x1080;
-    // Set camera direction
-    [self setCameraDirection];
-    // Set focus mode
-    [self setFocusMode];
-    // Set delegate
-    self.capture.delegate = self;
-    // Define the scan area (rect of interest)
-    [self defineScanArea];
-}
-
-// Start capturing
-- (void)startCapturing {
-    self.scanning = NO;
-    // Add capture layer to view
-    UIView* cap = [[UIView alloc] init];
-    [cap setTranslatesAutoresizingMaskIntoConstraints:false];
-    [self.view addSubview:cap];
-    [[cap.topAnchor constraintEqualToAnchor:self.view.topAnchor] setActive:YES];
-    [[cap.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor] setActive:YES];
-    [[cap.rightAnchor constraintEqualToAnchor:self.view.rightAnchor] setActive:YES];
-    [[cap.leftAnchor constraintEqualToAnchor:self.view.leftAnchor] setActive:YES];
-    [cap.layer addSublayer:self.capture.layer];
-    [self.view sendSubviewToBack:cap];
-    self.captureView = cap;
-}
-
-// Add gradient to the view for the moving laser effect
 - (void)addGradientToView {
-    if(!self.lineEnabled) { return; } // Check if line is enabled
-    // Create gradient layer for the moving laser effect
+    if (!self.lineEnabled) { return; }
     CAGradientLayer *gradientUp = [CAGradientLayer layer];
-    // Set gradient colors
-    gradientUp.colors = @[(id)[UIColor colorWithWhite:1 alpha:0].CGColor,(id)[UIColor whiteColor].CGColor,(id)[UIColor whiteColor].CGColor,(id)[UIColor colorWithWhite:1 alpha:0].CGColor];
-    gradientUp.frame = self.laserGradient.bounds; // Set gradient frame
-    // Set gradient locations
+    gradientUp.colors = @[(id)[UIColor colorWithWhite:1 alpha:0].CGColor, (id)[UIColor whiteColor].CGColor, (id)[UIColor whiteColor].CGColor, (id)[UIColor colorWithWhite:1 alpha:0].CGColor];
+    gradientUp.frame = self.laserGradient.bounds;
     gradientUp.locations = @[@0.5, @0.5, @0.5, @0.5];
-    // Insert gradient layer at index 0
     [self.laserGradient.layer insertSublayer:gradientUp atIndex:0];
-    // Store the gradient layer
     self.gradient = gradientUp;
 }
 
-// Set camera direction based on the specified direction
-- (void)setCameraDirection {
-    switch (self.direction) {
-        case kBack:
-            self.capture.camera = self.capture.back;
-            break;
-        case kFront:
-            self.capture.camera = self.capture.front;
-            break;
-        default:
-            self.capture.camera = self.capture.back;
-            break;
-    }
-}
-
-// Set focus mode
-- (void)setFocusMode {
-    if (self.enableAutoFocus) {
-        self.capture.focusMode = AVCaptureFocusModeContinuousAutoFocus;
-    } else {
-        self.capture.focusMode = AVCaptureFocusModeLocked;
-    }
-}
-
-// Adjust capture frame based on orientation
-- (void)adjustCaptureFrame {
-    CGFloat captureRotation = [self getCaptureRotation];
-    CGAffineTransform transform = CGAffineTransformMakeRotation((CGFloat)(captureRotation / 180 * M_PI));
-    [self.capture setTransform:transform];
-    self.capture.layer.frame = UIScreen.mainScreen.bounds;
-}
-
-// Define scan area (rect of interest)
-- (void)defineScanArea {
-    // Assuming scanRectView is the view that defines the scanning area
-    CGRect scanRect = self.scanRectView.frame;
-    self.capture.scanRect = scanRect;
-}
-
-// Get capture rotation based on orientation
-- (CGFloat)getCaptureRotation {
-    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
-    CGFloat rotation;
-    switch (orientation) {
-        case UIInterfaceOrientationPortrait:
-            rotation = 0;
-            break;
-        case UIInterfaceOrientationLandscapeLeft:
-            rotation = 90;
-            break;
-        case UIInterfaceOrientationLandscapeRight:
-            rotation = -90;
-            break;
-        case UIInterfaceOrientationPortraitUpsideDown:
-            rotation = 180;
-            break;
-        default:
-            rotation = 0;
-            break;
-    }
-    return rotation;
-}
-
-// ZXCaptureDelegate method to handle captured result
-- (void)captureResult:(ZXCapture *)capture result:(ZXResult *)result {
-    if (!result || !result.text) {
+- (void)captureOutput:(AVCaptureOutput *)output didOutputMetadataObjects:(NSArray<__kindof AVMetadataObject *> *)metadataObjects fromConnection:(AVCaptureConnection *)connection {
+    if (metadataObjects.count == 0) {
         return;
     }
-    // Process the scanned barcode data
-    NSLog(@"Scanned data: %@", result.text);
-    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate); // Provide haptic feedback
-    [self handleScannedData:result.text];
+    
+    AVMetadataMachineReadableCodeObject *metadataObject = [metadataObjects objectAtIndex:0];
+    if ([[metadataObject type] isEqualToString:AVMetadataObjectTypeQRCode]) {
+        NSString *qrCodeString = metadataObject.stringValue;
+        NSLog(@"Scanned QR Code: %@", qrCodeString);
+        [self handleScannedData:qrCodeString];
+        [self.session stopRunning];
+    }
 }
 
-// Handle the scanned data
 - (void)handleScannedData:(NSString *)data {
     self.decodedLabel.text = data;
-    // Add any further processing of the scanned data here
+    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+    // Additional processing for scanned data
 }
 
-// Close button action
 - (IBAction)closeBtnPressed:(id)sender {
+    [self.session stopRunning];
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
