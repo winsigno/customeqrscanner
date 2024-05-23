@@ -26,8 +26,7 @@
 @property (nonatomic, copy) NSString* scanButtonText;
 @property (nonatomic, copy) NSString* scanInstructions;
 @property (nonatomic, copy) NSString* scanOrientation;
-@property (nonatomic, assign) BOOL enableAutoFocus; // Add this line
-
+@property (nonatomic, assign) BOOL enableAutoFocus;
 + (CDVBarcodeOptions*)parseOptions:(NSDictionary*)options;
 
 @end
