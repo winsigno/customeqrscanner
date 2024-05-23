@@ -3,8 +3,12 @@
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
+        <deployment identifier="watchOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="18093"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+        <capability name="WatchKit Extension" minToolsVersion="8.0"/>
+        <capability name="WatchKit 2.0" minToolsVersion="2.0"/>
+        <capability name="variableFrameRate" minToolsVersion="11.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ScannerViewController">
@@ -243,38 +247,6 @@
                     </constraints>
                 </view>
             </subviews>
-            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-            <constraints>
-                <constraint firstItem="crz-cq-ZQJ" firstAttribute="top" secondItem="AZy-bB-g8w" secondAttribute="bottom" id="00B-6r-bE3"/>
-                <constraint firstItem="taC-v6-KSQ" firstAttribute="leading" secondItem="6" secondAttribute="leading" id="1Wp-S3-bR7"/>
-                <constraint firstItem="tjp-qY-Usz" firstAttribute="leading" secondItem="6" secondAttribute="leading" id="52k-RW-lYg"/>
-                <constraint firstItem="crz-cq-ZQJ" firstAttribute="leading" secondItem="mhu-dY-pnh" secondAttribute="trailing" constant="-16" id="5SO-tu-OhK"/>
-                <constraint firstItem="mhu-dY-pnh" firstAttribute="centerY" secondItem="6" secondAttribute="centerY" id="77F-aA-4Ch"/>
-                <constraint firstItem="mhu-dY-pnh" firstAttribute="leading" secondItem="6" secondAttribute="leadingMargin" constant="4" id="8J4-hR-t3S"/>
-                <constraint firstAttribute="trailing" secondItem="VrH-l4-HuO" secondAttribute="trailing" id="C56-H5-0wH"/>
-                <constraint firstItem="AZy-bB-g8w" firstAttribute="top" secondItem="6" secondAttribute="top" id="Cou-uf-kbw"/>
-                <constraint firstAttribute="bottomMargin" secondItem="tjp-qY-Usz" secondAttribute="bottom" id="Fie-I6-fbE"/>
-                <constraint firstItem="tjp-qY-Usz" firstAttribute="top" secondItem="mhu-dY-pnh" secondAttribute="bottom" constant="8" id="Lo2-My-oQR"/>
-                <constraint firstItem="AZy-bB-g8w" firstAttribute="leading" secondItem="6" secondAttribute="leading" id="Phf-hU-Ihq"/>
-                <constraint firstItem="taC-v6-KSQ" firstAttribute="top" secondItem="oKH-qn-mcX" secondAttribute="bottom" id="RMd-HE-fMv"/>
-                <constraint firstItem="oKH-qn-mcX" firstAttribute="trailing" secondItem="mhu-dY-pnh" secondAttribute="leading" constant="16" id="TWR-D0-kFy"/>
-                <constraint firstItem="oKH-qn-mcX" firstAttribute="leading" secondItem="6" secondAttribute="leading" id="VfG-NA-Vlq"/>
-                <constraint firstAttribute="trailing" secondItem="crz-cq-ZQJ" secondAttribute="trailing" id="X5H-iG-5gO"/>
-                <constraint firstItem="mhu-dY-pnh" firstAttribute="top" secondItem="VrH-l4-HuO" secondAttribute="bottom" constant="8" id="YlT-kl-cPX"/>
-                <constraint firstAttribute="trailing" secondItem="tjp-qY-Usz" secondAttribute="trailing" id="bLV-96-nre"/>
-                <constraint firstAttribute="bottom" secondItem="taC-v6-KSQ" secondAttribute="bottom" id="cuF-5V-WjL"/>
-                <constraint firstItem="taC-v6-KSQ" firstAttribute="top" secondItem="crz-cq-ZQJ" secondAttribute="bottom" id="eqr-1K-KSw"/>
-                <constraint firstAttribute="trailing" secondItem="AZy-bB-g8w" secondAttribute="trailing" id="fcS-W1-6o7"/>
-                <constraint firstItem="VrH-l4-HuO" firstAttribute="leading" secondItem="6" secondAttribute="leading" id="h5m-Mt-rxX"/>
-                <constraint firstItem="oKH-qn-mcX" firstAttribute="top" secondItem="AZy-bB-g8w" secondAttribute="bottom" id="mfQ-vu-Osq"/>
-                <constraint firstAttribute="trailingMargin" secondItem="mhu-dY-pnh" secondAttribute="trailing" constant="4" id="mwW-vd-ub1"/>
-                <constraint firstAttribute="trailing" secondItem="taC-v6-KSQ" secondAttribute="trailing" id="p6f-lE-1yi"/>
-                <constraint firstItem="VrH-l4-HuO" firstAttribute="top" secondItem="6" secondAttribute="topMargin" id="t2u-c2-DJt"/>
-                <constraint firstItem="AZy-bB-g8w" firstAttribute="bottom" secondItem="mhu-dY-pnh" secondAttribute="top" constant="16" id="tb7-B5-2fI"/>
-                <constraint firstItem="taC-v6-KSQ" firstAttribute="top" secondItem="mhu-dY-pnh" secondAttribute="bottom" constant="-16" id="tcZ-kA-bR2"/>
-            </constraints>
-            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
-            <point key="canvasLocation" x="136.23188405797103" y="121.875"/>
         </view>
     </objects>
     <resources>
