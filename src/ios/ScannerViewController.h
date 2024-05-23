@@ -28,9 +28,7 @@ typedef NS_ENUM(NSUInteger, ScanOrientation) {
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *movingBarTopConstraint;
 @property (weak, nonatomic) IBOutlet UIView *externalView;
 @property (weak, nonatomic) IBOutlet UIView *blurFrame;
--(instancetype)initWithScanInstructions:(NSString*)instructions CameraDirection:(CameraDirection)direction ScanOrientation:(ScanOrientation)orientation ScanLine:(bool)lineEnabled ScanButtonEnabled:(bool)buttonEnabled ScanButton:(NSString*)buttonTitle EnableAutoFocus:(BOOL)enableAutoFocus;  // Add autofocus parameter;
-- (IBAction)flashBtnPressed:(id)sender;
-- (IBAction)scanBtnPressed:(id)sender;
+-(instancetype)initWithScanInstructions:(NSString*)instructions CameraDirection:(CameraDirection)direction ScanOrientation:(ScanOrientation)orientation ScanLine:(bool)lineEnabled ScanButtonEnabled:(bool)buttonEnabled ScanButton:(NSString*)buttonTitle EnableAutoFocus:(BOOL)enableAutoFocus;  
 - (IBAction)closeBtnPressed:(id)sender;
 
 @end
