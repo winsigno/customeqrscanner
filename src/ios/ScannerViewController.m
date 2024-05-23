@@ -113,6 +113,8 @@
     [self setFocusMode];
     // Set delegate
     self.capture.delegate = self;
+    // Define the scan area (rect of interest)
+    [self defineScanArea];
 }
 
 // Start capturing
@@ -166,4 +168,70 @@
 - (void)setFocusMode {
     if (self.enableAutoFocus) {
         self.capture.focusMode = AVCaptureFocusModeContinuousAutoFocus;
+    } else {
+        self.capture.focusMode = AVCaptureFocusModeLocked;
     }
+}
+
+// Adjust capture frame based on orientation
+- (void)adjustCaptureFrame {
+    CGFloat captureRotation = [self getCaptureRotation];
+    CGAffineTransform transform = CGAffineTransformMakeRotation((CGFloat)(captureRotation / 180 * M_PI));
+    [self.capture setTransform:transform];
+    self.capture.layer.frame = UIScreen.mainScreen.bounds;
+}
+
+// Define scan area (rect of interest)
+- (void)defineScanArea {
+    // Assuming scanRectView is the view that defines the scanning area
+    CGRect scanRect = self.scanRectView.frame;
+    self.capture.scanRect = scanRect;
+}
+
+// Get capture rotation based on orientation
+- (CGFloat)getCaptureRotation {
+    UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+    CGFloat rotation;
+    switch (orientation) {
+        case UIInterfaceOrientationPortrait:
+            rotation = 0;
+            break;
+        case UIInterfaceOrientationLandscapeLeft:
+            rotation = 90;
+            break;
+        case UIInterfaceOrientationLandscapeRight:
+            rotation = -90;
+            break;
+        case UIInterfaceOrientationPortraitUpsideDown:
+            rotation = 180;
+            break;
+        default:
+            rotation = 0;
+            break;
+    }
+    return rotation;
+}
+
+// ZXCaptureDelegate method to handle captured result
+- (void)captureResult:(ZXCapture *)capture result:(ZXResult *)result {
+    if (!result || !result.text) {
+        return;
+    }
+    // Process the scanned barcode data
+    NSLog(@"Scanned data: %@", result.text);
+    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate); // Provide haptic feedback
+    [self handleScannedData:result.text];
+}
+
+// Handle the scanned data
+- (void)handleScannedData:(NSString *)data {
+    self.decodedLabel.text = data;
+    // Add any further processing of the scanned data here
+}
+
+// Close button action
+- (IBAction)closeBtnPressed:(id)sender {
+    [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+@end
