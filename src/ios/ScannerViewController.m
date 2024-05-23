@@ -71,4 +71,99 @@
     [super viewWillAppear:animated];
     // Adjust capture frame
     [self adjustCaptureFrame];
-    // Show laser g
+    // Show laser gradient
+    self.laserGradient.hidden = false;
+}
+
+// Supported interface orientations
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    switch (self.orientation) {
+        case kAdaptive:
+            return UIInterfaceOrientationMaskAll;
+        case kPortrait:
+            return UIInterfaceOrientationMaskPortrait;
+        case kLandscape:
+            return UIInterfaceOrientationMaskLandscape;
+        default:
+            return UIInterfaceOrientationMaskAll;
+    }
+}
+
+// Setup UI elements
+- (void)setupUI {
+    // Set instructions text
+    self.informationView.text = self.instructionsText;
+    // Customize scan button
+    self.scanButton.layer.cornerRadius = 25;
+    self.scanButton.clipsToBounds = YES;
+    self.scanButton.imageView.contentMode = UIViewContentModeScaleAspectFill;
+    self.scanButton.hidden = !self.scanButtonEnabled;
+    // Hide moving bar if not enabled
+    self.movingBar.hidden = !self.lineEnabled;
+}
+
+// Configure capture settings
+- (void)configureCapture {
+    // Initialize capture object
+    self.capture = [[ZXCapture alloc] init];
+    self.capture.sessionPreset = AVCaptureSessionPreset1920x1080;
+    // Set camera direction
+    [self setCameraDirection];
+    // Set focus mode
+    [self setFocusMode];
+    // Set delegate
+    self.capture.delegate = self;
+}
+
+// Start capturing
+- (void)startCapturing {
+    self.scanning = NO;
+    // Add capture layer to view
+    UIView* cap = [[UIView alloc] init];
+    [cap setTranslatesAutoresizingMaskIntoConstraints:false];
+    [self.view addSubview:cap];
+    [[cap.topAnchor constraintEqualToAnchor:self.view.topAnchor] setActive:YES];
+    [[cap.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor] setActive:YES];
+    [[cap.rightAnchor constraintEqualToAnchor:self.view.rightAnchor] setActive:YES];
+    [[cap.leftAnchor constraintEqualToAnchor:self.view.leftAnchor] setActive:YES];
+    [cap.layer addSublayer:self.capture.layer];
+    [self.view sendSubviewToBack:cap];
+    self.captureView = cap;
+}
+
+// Add gradient to the view for the moving laser effect
+- (void)addGradientToView {
+    if(!self.lineEnabled) { return; } // Check if line is enabled
+    // Create gradient layer for the moving laser effect
+    CAGradientLayer *gradientUp = [CAGradientLayer layer];
+    // Set gradient colors
+    gradientUp.colors = @[(id)[UIColor colorWithWhite:1 alpha:0].CGColor,(id)[UIColor whiteColor].CGColor,(id)[UIColor whiteColor].CGColor,(id)[UIColor colorWithWhite:1 alpha:0].CGColor];
+    gradientUp.frame = self.laserGradient.bounds; // Set gradient frame
+    // Set gradient locations
+    gradientUp.locations = @[@0.5, @0.5, @0.5, @0.5];
+    // Insert gradient layer at index 0
+    [self.laserGradient.layer insertSublayer:gradientUp atIndex:0];
+    // Store the gradient layer
+    self.gradient = gradientUp;
+}
+
+// Set camera direction based on the specified direction
+- (void)setCameraDirection {
+    switch (self.direction) {
+        case kBack:
+            self.capture.camera = self.capture.back;
+            break;
+        case kFront:
+            self.capture.camera = self.capture.front;
+            break;
+        default:
+            self.capture.camera = self.capture.back;
+            break;
+    }
+}
+
+// Set focus mode
+- (void)setFocusMode {
+    if (self.enableAutoFocus) {
+        self.capture.focusMode = AVCaptureFocusModeContinuousAutoFocus;
+    }
