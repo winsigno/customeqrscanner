@@ -1,13 +1,6 @@
-//
-//  ScannerViewController.h
-//  BarcodeTestApp
-//
-//  Created by Carlos Correa on 26/04/2021.
-//
-
+// ScannerViewController.h
 #import <UIKit/UIKit.h>
-#import <ZXingObjC/ZXingObjC.h>
-#import <Cordova/CDV.h>
+#import <AVFoundation/AVFoundation.h>
 
 typedef NS_ENUM(NSUInteger, CameraDirection) {
     kFront,
@@ -20,7 +13,8 @@ typedef NS_ENUM(NSUInteger, ScanOrientation) {
     kLandscape
 };
 
-@interface ScannerViewController : UIViewController <ZXCaptureDelegate>
+@interface ScannerViewController : UIViewController <AVCaptureMetadataOutputObjectsDelegate>
+
 @property (weak, nonatomic) IBOutlet UIButton *scanButton;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *laserDownTrailingConstraint;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *laserUpTrailingConstraint;
@@ -28,7 +22,8 @@ typedef NS_ENUM(NSUInteger, ScanOrientation) {
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *movingBarTopConstraint;
 @property (weak, nonatomic) IBOutlet UIView *externalView;
 @property (weak, nonatomic) IBOutlet UIView *blurFrame;
--(instancetype)initWithScanInstructions:(NSString*)instructions CameraDirection:(CameraDirection)direction ScanOrientation:(ScanOrientation)orientation ScanLine:(bool)lineEnabled ScanButtonEnabled:(bool)buttonEnabled ScanButton:(NSString*)buttonTitle EnableAutoFocus:(BOOL)enableAutoFocus;  
+
+- (instancetype)initWithScanInstructions:(NSString*)instructions CameraDirection:(CameraDirection)direction ScanOrientation:(ScanOrientation)orientation ScanLine:(bool)lineEnabled ScanButtonEnabled:(bool)buttonEnabled ScanButton:(NSString*)buttonTitle EnableAutoFocus:(BOOL)enableAutoFocus;  
 - (IBAction)closeBtnPressed:(id)sender;
 
 @end
